@@ -1,0 +1,122 @@
+index([X|_], 0, X).
+index([_|Tail], I, X) :-
+	index(Tail, J, X),
+	I is J + 1.
+
+row(Matrix, Y, Row) :-
+	index(Matrix, Y, Row).
+
+column([Row], X, [Value]) :-
+	row(Row, X, Value).
+column([Row|OtherRows], X, [Value|OtherValues]) :-
+	row(Row, X, Value),
+	column(OtherRows, X, OtherValues).
+
+cat([], L, L).
+cat([H|T1], L2, [H|T3]) :-
+    cat(T1, L2, T3).
+
+contains(List, Item) :-
+    cat(_, [Item|_], List).
+
+subset([], _).
+subset([H|T], Set) :-
+    contains(Set, H),
+    subset(T, Set).
+
+acc_set([], Set, Set).
+acc_set([ListHead|ListTail], Acc, Set) :-
+    not(contains(Acc, ListHead)),
+    cat(Acc, [ListHead], NewAcc),
+    acc_set(ListTail, NewAcc, Set).
+acc_set([ListHead|ListTail], Acc, Set) :-
+    contains(Acc, ListHead),
+    acc_set(ListTail, Acc, Set).
+set(List, Set) :-
+    acc_set(List, [], Set).
+
+% repeat_acc(X, N, Acc, _) :-
+% 	len(Acc, N).
+% repeat_acc(X, N, Acc, _) :-
+% 	len(Acc, N).
+
+repeat_(X, N, L) :-
+	length(L, N),
+	set(L, [X]).
+
+% count([], _, 0).
+% count([X|T], X, M) :-
+% 	count(T, X, N),
+% 	M is N + 1.
+% count([H|T], X, N) :-
+% 	count(T, X, N),
+% 	H \= X.
+
+len_acc([], Len, Len).
+len_acc([_|T], Acc, Len) :-
+	NewAcc is Acc + 1,
+	len_acc(T, NewAcc, Len).
+
+len(List, Len) :-
+	len_acc(List, 0, Len).
+
+% len([], 0).
+% len([_|T], L) :-
+% 	len(T, M),
+% 	L is M + 1.
+
+matrix_height(Matrix, H) :-
+	len(Matrix, H).
+matrix_width([Row], W) :-
+	len(Row, W).
+matrix_width([Row|OtherRows], W) :-
+	len(Row, W),
+	matrix_width(OtherRows, W).
+
+matrix_size(Matrix, H, W) :-
+	matrix_height(Matrix, H),
+	matrix_width(Matrix, W).
+equal_matrix_sizes(M1, M2) :-
+	matrix_size(M1, H, W),
+	matrix_size(M2, H, W).
+
+columns_acc(Matrix, 0, [Column]) :-
+	column(Matrix, 0, Column).
+columns_acc(Matrix, I, [Column|OtherColumns]) :-
+	column(Matrix, I, Column),
+	J is I - 1,
+	columns_acc(Matrix, J, OtherColumns).
+columns(Matrix, Columns) :-
+	matrix_width(Matrix, W),
+	V is W - 1,
+	columns_acc(Matrix, V, Columns).
+
+% contains([X], X).
+% contains([X|_], X).
+% contains([H|T], X) :-
+% 	contains(T, X),
+% 	H \= X.
+
+columns_values([]).
+columns_values([Column|OtherColumns]) :-
+	count(Column, 1, 1),
+	len(Column, L),
+	M is L - 1,
+	count(Column, 0, M),
+	columns_values(OtherColumns).
+ 
+distribute(Preferences, Distribution) :-
+	equal_matrix_sizes(Preferences, Distribution).
+	%columns(Distribution, Columns).
+	%columns_values(Columns).
+
+distribute_custom(Distribution) :-
+	Preferences = [
+	%	%	apple,	bacon,	cake,	duck,	egg,	fish
+	%	[	1,	2,	3,	4,	5,	6	],	% alice
+	%	[	6,	5,	4,	3,	2,	1	],	% bob
+	%	[	3,	4,	2,	5,	1,	6	]	% carl
+		[	1,	3	],
+		[	6,	4	]
+	],
+	distribute(Preferences, Distribution).

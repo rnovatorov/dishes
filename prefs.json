@@ -1,0 +1,26 @@
+{
+  "alice": {
+    "apple": -2,
+    "bacon": -1,
+    "cake": 0,
+    "duck": 0,
+    "egg": 1,
+    "fish": 2
+  },
+  "bob": {
+    "apple": 2,
+    "bacon": 1,
+    "cake": 0,
+    "duck": 0,
+    "egg": -1,
+    "fish": -2
+  },
+  "carl": {
+    "apple": 0,
+    "bacon": 0,
+    "cake": 1,
+    "duck": -1,
+    "egg": 2,
+    "fish": -2
+  }
+}
