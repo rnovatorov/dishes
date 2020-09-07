@@ -7,7 +7,9 @@ import (
 	"io/ioutil"
 	"math"
 	"os"
+	"sort"
 	"strconv"
+	"strings"
 )
 
 func main() {
@@ -29,10 +31,10 @@ func Run() error {
 	index := BuildIndex(prefs)
 
 	solutions := GenerateSolutions(index)
-	for solution := range solutions {
-		fmt.Println(solution)
-	}
+	estimations := EstimateSolutions(index, solutions)
+	bestDistr, rating := FindBestDistribution(estimations)
 
+	fmt.Println(bestDistr, rating)
 	return nil
 }
 
@@ -72,6 +74,8 @@ func LoadPrefs(fileName string) (Prefs, error) {
 type Index struct {
 	DishesByPerson Prefs
 	PeopleByDish   map[DishName]map[PersonName]Rating
+	SortedDishes   []DishName
+	SortedPeople   []PersonName
 }
 
 func (index Index) NumberOfPeople() int {
@@ -83,8 +87,10 @@ func (index Index) NumberOfDishes() int {
 }
 
 func BuildIndex(prefs Prefs) Index {
+	dishesByPerson := prefs
 	peopleByDish := make(map[DishName]map[PersonName]Rating)
-	for personName, dishes := range prefs {
+
+	for personName, dishes := range dishesByPerson {
 		for dishName, rating := range dishes {
 			people, ok := peopleByDish[dishName]
 			if !ok {
@@ -94,17 +100,59 @@ func BuildIndex(prefs Prefs) Index {
 			people[personName] = rating
 		}
 	}
+
+	sortedDishes := make(DishNameSlice, 0, len(peopleByDish))
+	for dishName := range peopleByDish {
+		sortedDishes = append(sortedDishes, dishName)
+	}
+	sort.Sort(sortedDishes)
+
+	sortedPeople := make(PersonNameSlice, 0, len(dishesByPerson))
+	for personName := range dishesByPerson {
+		sortedPeople = append(sortedPeople, personName)
+	}
+	sort.Sort(sortedPeople)
+
 	return Index{
-		DishesByPerson: prefs,
+		DishesByPerson: dishesByPerson,
 		PeopleByDish:   peopleByDish,
+		SortedDishes:   sortedDishes,
+		SortedPeople:   sortedPeople,
 	}
 }
 
 type Solution string
 
-func (sol Solution) Estimate() int {
-	// TODO
-	return 0
+type Distribution map[PersonName][]DishName
+
+type Estimation struct {
+	Rating       Rating
+	Distribution Distribution
+}
+
+func (sol Solution) Estimate(index Index) Estimation {
+	var rating Rating
+	distr := make(map[PersonName][]DishName)
+
+	for dishIndex, s := range strings.Split(string(sol), "") {
+		personIndex := MustParseInt(s, index.NumberOfPeople(), 32)
+
+		dishName := index.SortedDishes[dishIndex]
+		personName := index.SortedPeople[personIndex]
+
+		rating += index.DishesByPerson[personName][dishName]
+		distr[personName] = append(distr[personName], dishName)
+	}
+
+	return Estimation{Rating: rating, Distribution: distr}
+}
+
+func MustParseInt(s string, base int, bitSize int) int64 {
+	n, err := strconv.ParseInt(s, base, bitSize)
+	if err != nil {
+		panic(err)
+	}
+	return n
 }
 
 func GenerateSolutions(index Index) <-chan Solution {
@@ -133,3 +181,36 @@ func CountSolutions(index Index) int64 {
 	n := math.Pow(nPeople, nDishes)
 	return int64(n)
 }
+
+func EstimateSolutions(index Index, solutions <-chan Solution) <-chan Estimation {
+	estimations := make(chan Estimation)
+	go func() {
+		defer close(estimations)
+		for solution := range solutions {
+			estimations <- solution.Estimate(index)
+		}
+	}()
+	return estimations
+}
+
+func FindBestDistribution(estimations <-chan Estimation) (Distribution, Rating) {
+	best := Estimation{Rating: Rating(math.Inf(-1))}
+	for estimation := range estimations {
+		if estimation.Rating > best.Rating {
+			best = estimation
+		}
+	}
+	return best.Distribution, best.Rating
+}
+
+type PersonNameSlice []PersonName
+
+func (p PersonNameSlice) Len() int           { return len(p) }
+func (p PersonNameSlice) Less(i, j int) bool { return p[i] < p[j] }
+func (p PersonNameSlice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+
+type DishNameSlice []DishName
+
+func (p DishNameSlice) Len() int           { return len(p) }
+func (p DishNameSlice) Less(i, j int) bool { return p[i] < p[j] }
+func (p DishNameSlice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
