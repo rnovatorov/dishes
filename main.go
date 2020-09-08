@@ -1,31 +1,42 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
+	"runtime/pprof"
 
 	"github.com/rnovatorov/dishes/lib"
 )
 
 func main() {
-	if err := Run(); err != nil {
+	if err := run(); err != nil {
 		fmt.Fprintf(os.Stderr, "error: %v\n", err)
 		os.Exit(1)
 	}
 }
 
-func Run() error {
-	args, err := ParseArgs()
-	if err != nil {
-		return fmt.Errorf("parse args: %w", err)
+func run() error {
+	args := parseArgs()
+
+	if *args.cpuProfile != "" {
+		file, err := os.Create(*args.cpuProfile)
+		if err != nil {
+			return fmt.Errorf("create file: %w", err)
+		}
+		defer file.Close()
+		if err := pprof.StartCPUProfile(file); err != nil {
+			return fmt.Errorf("start pprof: %w", err)
+		}
+		defer pprof.StopCPUProfile()
 	}
 
-	prefs, err := lib.LoadPrefs(args.PrefsFileName)
+	prefs, err := lib.LoadPrefs(*args.prefsFileName)
 	if err != nil {
 		return fmt.Errorf("load preferences: %w", err)
 	}
-	index := lib.BuildIndex(prefs)
 
+	index := lib.BuildIndex(prefs)
 	solutions := lib.GenerateSolutions(index)
 	estimations := lib.EstimateSolutions(index, solutions)
 	bestDistr, rating := lib.FindBestDistribution(estimations)
@@ -34,13 +45,18 @@ func Run() error {
 	return nil
 }
 
-type Args struct {
-	PrefsFileName string
+type parsedArgs struct {
+	prefsFileName *string
+	cpuProfile    *string
 }
 
-func ParseArgs() (*Args, error) {
-	if len(os.Args) != 2 {
-		return nil, fmt.Errorf("usage: %s PREFS", os.Args[0])
-	}
-	return &Args{PrefsFileName: os.Args[1]}, nil
+func parseArgs() parsedArgs {
+	var args parsedArgs
+
+	args.cpuProfile = flag.String("cpu-profile", "", "cpu profile file name")
+	args.prefsFileName = flag.String("preferences", "", "preferences file name")
+
+	flag.Parse()
+
+	return args
 }
