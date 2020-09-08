@@ -1,0 +1,67 @@
+{
+  "alice": {
+    "apple": -4,
+    "bacon": -3,
+    "cake": -2,
+    "duck": -1,
+    "egg": 0,
+    "fish": 1,
+    "garlic": 2,
+    "ham": 3,
+    "ice-cream": -4,
+    "jam": 2,
+    "ketchup": 3
+  },
+  "bob": {
+    "apple": 3,
+    "bacon": 2,
+    "cake": 1,
+    "duck": -1,
+    "egg": -2,
+    "fish": -3,
+    "garlic": 4,
+    "ham": 3,
+    "ice-cream": 2,
+    "jam": 2,
+    "ketchup": 3
+  },
+  "carl": {
+    "apple": 1,
+    "bacon": -1,
+    "cake": 2,
+    "duck": -2,
+    "egg": 3,
+    "fish": -3,
+    "garlic": 2,
+    "ham": 3,
+    "ice-cream": 4,
+    "jam": 2,
+    "ketchup": 3
+  },
+  "diana": {
+    "apple": 4,
+    "bacon": 3,
+    "cake": -2,
+    "duck": -1,
+    "egg": 0,
+    "fish": 1,
+    "garlic": 2,
+    "ham": 3,
+    "ice-cream": -4,
+    "jam": 2,
+    "ketchup": -3
+  },
+  "eve": {
+    "apple": 4,
+    "bacon": 3,
+    "cake": -2,
+    "duck": -1,
+    "egg": 0,
+    "fish": 1,
+    "garlic": 2,
+    "ham": 3,
+    "ice-cream": -4,
+    "jam": 2,
+    "ketchup": -3
+  }
+}

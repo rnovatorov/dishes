@@ -1,0 +1,50 @@
+{
+  "alice": {
+    "apple": -5,
+    "bacon": -4,
+    "cake": -3,
+    "duck": -2,
+    "egg": -1,
+    "fish": 1,
+    "garlic": 2,
+    "ham": 3,
+    "ice-cream": 4,
+    "jam": 5
+  },
+  "bob": {
+    "apple": 5,
+    "bacon": 4,
+    "cake": 3,
+    "duck": 2,
+    "egg": 1,
+    "fish": -1,
+    "garlic": -2,
+    "ham": -3,
+    "ice-cream": -4,
+    "jam": -5
+  },
+  "carl": {
+    "apple": 1,
+    "bacon": -1,
+    "cake": 2,
+    "duck": -2,
+    "egg": 3,
+    "fish": -3,
+    "garlic": 4,
+    "ham": -4,
+    "ice-cream": 5,
+    "jam": -5
+  },
+  "diana": {
+    "apple": 5,
+    "bacon": -5,
+    "cake": 4,
+    "duck": -4,
+    "egg": 3,
+    "fish": -3,
+    "garlic": 2,
+    "ham": -2,
+    "ice-cream": 1,
+    "jam": -1
+  }
+}
