@@ -9,7 +9,19 @@ import (
 
 type Solution string
 
-type Distribution map[PersonName][]DishName
+type Distribution [][]int
+
+func (d Distribution) Map(index Index) map[PersonName][]DishName {
+	m := make(map[PersonName][]DishName)
+	for personIndex, dishes := range d {
+		personName := index.People[personIndex]
+		for _, dishIndex := range dishes {
+			dishName := index.Menu[dishIndex]
+			m[personName] = append(m[personName], dishName)
+		}
+	}
+	return m
+}
 
 type Estimation struct {
 	Rating       Rating
@@ -18,16 +30,16 @@ type Estimation struct {
 
 func (sol Solution) Estimate(index Index) Estimation {
 	var rating Rating
-	distr := make(map[PersonName][]DishName)
+
+	distr := make(Distribution, len(index.People))
+	for personIndex := range index.People {
+		distr[personIndex] = make([]int, 0, len(index.Menu))
+	}
 
 	for dishIndex, s := range strings.Split(string(sol), "") {
-		personIndex := MustParseInt(s, index.NumberOfPeople(), 32)
-
-		dishName := index.SortedDishes[dishIndex]
-		personName := index.SortedPeople[personIndex]
-
-		rating += index.DishesByPerson[personName][dishName]
-		distr[personName] = append(distr[personName], dishName)
+		personIndex := int(MustParseInt(s, len(index.People), 32))
+		rating += index.Matrix[personIndex][dishIndex]
+		distr[personIndex] = append(distr[personIndex], dishIndex)
 	}
 
 	return Estimation{Rating: rating, Distribution: distr}
@@ -47,13 +59,11 @@ func GenerateSolutions(index Index) <-chan Solution {
 		defer close(solutions)
 
 		nSolutions := CountSolutions(index)
-		nPeople := index.NumberOfPeople()
-		nDishes := index.NumberOfDishes()
 
 		var i int64
 		for i = 0; i < nSolutions; i++ {
-			iBaseNPeople := strconv.FormatInt(i, nPeople)
-			nDishesZeroPadded := fmt.Sprintf("%%0%ds", nDishes)
+			iBaseNPeople := strconv.FormatInt(i, len(index.People))
+			nDishesZeroPadded := fmt.Sprintf("%%0%ds", len(index.Menu))
 			sol := fmt.Sprintf(nDishesZeroPadded, iBaseNPeople)
 			solutions <- Solution(sol)
 		}
@@ -62,8 +72,8 @@ func GenerateSolutions(index Index) <-chan Solution {
 }
 
 func CountSolutions(index Index) int64 {
-	nPeople := float64(index.NumberOfPeople())
-	nDishes := float64(index.NumberOfDishes())
+	nPeople := float64(len(index.People))
+	nDishes := float64(len(index.Menu))
 	n := math.Pow(nPeople, nDishes)
 	return int64(n)
 }

@@ -1,55 +1,32 @@
 package lib
 
-import (
-	"sort"
-)
-
 type Index struct {
-	DishesByPerson Prefs
-	PeopleByDish   map[DishName]map[PersonName]Rating
-	SortedDishes   []DishName
-	SortedPeople   []PersonName
-}
-
-func (index Index) NumberOfPeople() int {
-	return len(index.DishesByPerson)
-}
-
-func (index Index) NumberOfDishes() int {
-	return len(index.PeopleByDish)
+	Menu   []DishName
+	People []PersonName
+	Matrix [][]Rating
 }
 
 func BuildIndex(prefs Prefs) Index {
-	dishesByPerson := prefs
-	peopleByDish := make(map[DishName]map[PersonName]Rating)
+	var index Index
 
-	for personName, dishes := range dishesByPerson {
-		for dishName, rating := range dishes {
-			people, ok := peopleByDish[dishName]
-			if !ok {
-				people = make(map[PersonName]Rating)
-				peopleByDish[dishName] = people
+	seen := make(map[DishName]bool)
+	for personName, dishes := range prefs {
+		for dishName := range dishes {
+			if !seen[dishName] {
+				index.Menu = append(index.Menu, dishName)
+				seen[dishName] = true
 			}
-			people[personName] = rating
+		}
+		index.People = append(index.People, personName)
+	}
+
+	index.Matrix = make([][]Rating, len(index.People))
+	for personIndex, personName := range index.People {
+		index.Matrix[personIndex] = make([]Rating, len(index.Menu))
+		for dishIndex, dishName := range index.Menu {
+			index.Matrix[personIndex][dishIndex] = prefs[personName][dishName]
 		}
 	}
 
-	sortedDishes := make(DishNameSlice, 0, len(peopleByDish))
-	for dishName := range peopleByDish {
-		sortedDishes = append(sortedDishes, dishName)
-	}
-	sort.Sort(sortedDishes)
-
-	sortedPeople := make(PersonNameSlice, 0, len(dishesByPerson))
-	for personName := range dishesByPerson {
-		sortedPeople = append(sortedPeople, personName)
-	}
-	sort.Sort(sortedPeople)
-
-	return Index{
-		DishesByPerson: dishesByPerson,
-		PeopleByDish:   peopleByDish,
-		SortedDishes:   sortedDishes,
-		SortedPeople:   sortedPeople,
-	}
+	return index
 }

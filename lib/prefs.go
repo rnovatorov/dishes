@@ -8,8 +8,11 @@ import (
 )
 
 type PersonName string
+
 type DishName string
+
 type Rating int
+
 type Prefs map[PersonName]map[DishName]Rating
 
 func LoadPrefs(fileName string) (Prefs, error) {
@@ -26,15 +29,3 @@ func LoadPrefs(fileName string) (Prefs, error) {
 	}
 	return prefs, nil
 }
-
-type PersonNameSlice []PersonName
-
-func (p PersonNameSlice) Len() int           { return len(p) }
-func (p PersonNameSlice) Less(i, j int) bool { return p[i] < p[j] }
-func (p PersonNameSlice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
-
-type DishNameSlice []DishName
-
-func (p DishNameSlice) Len() int           { return len(p) }
-func (p DishNameSlice) Less(i, j int) bool { return p[i] < p[j] }
-func (p DishNameSlice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }

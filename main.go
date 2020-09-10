@@ -41,7 +41,7 @@ func run() error {
 	estimations := lib.EstimateSolutions(index, solutions)
 	bestDistr, rating := lib.FindBestDistribution(estimations)
 
-	fmt.Println(bestDistr, rating)
+	fmt.Println(bestDistr.Map(index), rating)
 	return nil
 }
 
