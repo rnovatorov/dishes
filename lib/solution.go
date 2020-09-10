@@ -45,13 +45,12 @@ func MustParseInt(s string, base int, bitSize int) int64 {
 }
 
 func GenerateSolutions(index Index) <-chan Solution {
-	solutions := make(chan Solution)
+	const bufSize = 256
+	solutions := make(chan Solution, bufSize)
 	go func() {
 		defer close(solutions)
-
-		nSolutions := CountSolutions(index)
-
 		var i int64
+		nSolutions := CountSolutions(index)
 		for i = 0; i < nSolutions; i++ {
 			iBaseNPeople := strconv.FormatInt(i, len(index.People))
 			nDishesZeroPadded := fmt.Sprintf("%%0%ds", len(index.Menu))
