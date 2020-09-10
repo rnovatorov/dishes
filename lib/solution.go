@@ -9,40 +9,31 @@ import (
 
 type Solution string
 
-type Distribution [][]int
-
-func (d Distribution) Map(index Index) map[PersonName][]DishName {
-	m := make(map[PersonName][]DishName)
-	for personIndex, dishes := range d {
-		personName := index.People[personIndex]
-		for _, dishIndex := range dishes {
-			dishName := index.Menu[dishIndex]
-			m[personName] = append(m[personName], dishName)
-		}
-	}
-	return m
-}
-
-type Estimation struct {
-	Rating       Rating
-	Distribution Distribution
-}
-
-func (sol Solution) Estimate(index Index) Estimation {
+func (sol Solution) Rating(index Index) Rating {
 	var rating Rating
+	sol.iterate(index, func(personIndex, dishIndex int) {
+		rating += index.Matrix[personIndex][dishIndex]
+	})
+	return rating
+}
 
-	distr := make(Distribution, len(index.People))
-	for personIndex := range index.People {
-		distr[personIndex] = make([]int, 0, len(index.Menu))
-	}
+type Distribution map[PersonName][]DishName
 
+func (sol Solution) Distribution(index Index) Distribution {
+	distr := make(Distribution)
+	sol.iterate(index, func(personIndex, dishIndex int) {
+		personName := index.People[personIndex]
+		dishName := index.Menu[dishIndex]
+		distr[personName] = append(distr[personName], dishName)
+	})
+	return distr
+}
+
+func (sol Solution) iterate(index Index, fn func(personIndex, dishIndex int)) {
 	for dishIndex, s := range strings.Split(string(sol), "") {
 		personIndex := int(MustParseInt(s, len(index.People), 32))
-		rating += index.Matrix[personIndex][dishIndex]
-		distr[personIndex] = append(distr[personIndex], dishIndex)
+		fn(personIndex, dishIndex)
 	}
-
-	return Estimation{Rating: rating, Distribution: distr}
 }
 
 func MustParseInt(s string, base int, bitSize int) int64 {
@@ -78,23 +69,14 @@ func CountSolutions(index Index) int64 {
 	return int64(n)
 }
 
-func EstimateSolutions(index Index, solutions <-chan Solution) <-chan Estimation {
-	estimations := make(chan Estimation)
-	go func() {
-		defer close(estimations)
-		for solution := range solutions {
-			estimations <- solution.Estimate(index)
-		}
-	}()
-	return estimations
-}
-
-func FindBestDistribution(estimations <-chan Estimation) (Distribution, Rating) {
-	best := Estimation{Rating: Rating(math.Inf(-1))}
-	for estimation := range estimations {
-		if estimation.Rating > best.Rating {
-			best = estimation
+func FindBestDistribution(index Index, solutions <-chan Solution) (Distribution, Rating) {
+	var bestDistr Distribution
+	maxRating := Rating(math.Inf(-1))
+	for sol := range solutions {
+		if rating := sol.Rating(index); rating > maxRating {
+			maxRating = rating
+			bestDistr = sol.Distribution(index)
 		}
 	}
-	return best.Distribution, best.Rating
+	return bestDistr, maxRating
 }
