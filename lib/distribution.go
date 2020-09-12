@@ -1,23 +1,25 @@
 package lib
 
-import (
-	"fmt"
-	"strconv"
-)
-
 type Distribution []int
 
 func NewDistibution(index Index, i int) Distribution {
-	iBaseNPeople := strconv.FormatInt(int64(i), len(index.People))
-	nDishesZeroPadded := fmt.Sprintf("%%0%ds", len(index.Menu))
-	digits := fmt.Sprintf(nDishesZeroPadded, iBaseNPeople)
-
+	digits := changeNumeralSystem(i, len(index.People), len(index.Menu))
 	distribution := make([]int, len(index.Menu))
-	for dishIndex, digit := range digits {
-		personIndex := int(digit - '0')
+	for dishIndex, personIndex := range digits {
 		distribution[dishIndex] = personIndex
 	}
 	return distribution
+}
+
+func changeNumeralSystem(n int, base int, size int) []int {
+	digits := make([]int, size)
+	for i := size - 1; n != 0; {
+		q, r := n/base, n%base
+		digits[i] = r
+		i--
+		n = q
+	}
+	return digits
 }
 
 func (d Distribution) Map(index Index) map[Person][]Dish {
