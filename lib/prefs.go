@@ -7,13 +7,13 @@ import (
 	"io/ioutil"
 )
 
-type PersonName string
+type Person string
 
-type DishName string
+type Dish string
 
 type Rating int
 
-type Prefs map[PersonName]map[DishName]Rating
+type Prefs map[Person]map[Dish]Rating
 
 func LoadPrefs(fileName string) (Prefs, error) {
 	fileBytes, err := ioutil.ReadFile(fileName)

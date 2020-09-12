@@ -1,30 +1,30 @@
 package lib
 
 type Index struct {
-	Menu   []DishName
-	People []PersonName
+	Menu   []Dish
+	People []Person
 	Matrix [][]Rating
 }
 
 func BuildIndex(prefs Prefs) Index {
 	var index Index
 
-	seen := make(map[DishName]bool)
-	for personName, dishes := range prefs {
-		for dishName := range dishes {
-			if !seen[dishName] {
-				index.Menu = append(index.Menu, dishName)
-				seen[dishName] = true
+	seen := make(map[Dish]bool)
+	for person, dishes := range prefs {
+		for dish := range dishes {
+			if !seen[dish] {
+				index.Menu = append(index.Menu, dish)
+				seen[dish] = true
 			}
 		}
-		index.People = append(index.People, personName)
+		index.People = append(index.People, person)
 	}
 
 	index.Matrix = make([][]Rating, len(index.People))
-	for personIndex, personName := range index.People {
+	for personIndex, person := range index.People {
 		index.Matrix[personIndex] = make([]Rating, len(index.Menu))
-		for dishIndex, dishName := range index.Menu {
-			index.Matrix[personIndex][dishIndex] = prefs[personName][dishName]
+		for dishIndex, dish := range index.Menu {
+			index.Matrix[personIndex][dishIndex] = prefs[person][dish]
 		}
 	}
 

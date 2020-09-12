@@ -29,14 +29,14 @@ func (sol Solution) Score(index Index) float64 {
 	return cumRating - cumDeviation
 }
 
-type Distribution map[PersonName][]DishName
+type Distribution map[Person][]Dish
 
 func (sol Solution) Distribution(index Index) Distribution {
 	distr := make(Distribution)
 	sol.iterate(index, func(personIndex, dishIndex int) {
-		personName := index.People[personIndex]
-		dishName := index.Menu[dishIndex]
-		distr[personName] = append(distr[personName], dishName)
+		person := index.People[personIndex]
+		dish := index.Menu[dishIndex]
+		distr[person] = append(distr[person], dish)
 	})
 	return distr
 }
