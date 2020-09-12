@@ -1,6 +1,9 @@
 package lib
 
-import "math"
+import (
+	"container/heap"
+	"math"
+)
 
 type Solver struct {
 	index Index
@@ -42,12 +45,14 @@ func (s Solver) RateDistributions(distributions <-chan Distribution) <-chan Solu
 	return solutions
 }
 
-func (_ Solver) FindBestSolution(solutions <-chan Solution) Solution {
-	best := Solution{Score: math.Inf(-1)}
-	for s := range solutions {
-		if s.Score > best.Score {
-			best = s
-		}
+func (s Solver) FindBestSolutions(solutions <-chan Solution, n int) []Solution {
+	h := &SolutionHeap{capacity: n}
+	for sol := range solutions {
+		heap.Push(h, sol)
+	}
+	best := make([]Solution, n)
+	for i := n - 1; i >= 0; i-- {
+		best[i] = heap.Pop(h).(Solution)
 	}
 	return best
 }

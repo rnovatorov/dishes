@@ -41,8 +41,11 @@ func run() error {
 
 	distributions := solver.GenerateDistributions()
 	solutions := solver.RateDistributions(distributions)
-	bestSolution := solver.FindBestSolution(solutions)
-	fmt.Println(bestSolution.Distribution.Map(index), bestSolution.Score)
+	bestSolutions := solver.FindBestSolutions(solutions, *args.top)
+
+	for i, s := range bestSolutions {
+		fmt.Printf("%02d %v %f\n", i+1, s.Distribution.Map(index), s.Score)
+	}
 
 	return nil
 }
@@ -50,6 +53,7 @@ func run() error {
 type parsedArgs struct {
 	prefsFileName *string
 	cpuProfile    *string
+	top           *int
 }
 
 func parseArgs() parsedArgs {
@@ -57,6 +61,7 @@ func parseArgs() parsedArgs {
 
 	args.cpuProfile = flag.String("cpu-profile", "", "cpu profile file name")
 	args.prefsFileName = flag.String("preferences", "", "preferences file name")
+	args.top = flag.Int("top", 10, "find top n solutions")
 
 	flag.Parse()
 
