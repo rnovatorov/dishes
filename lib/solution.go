@@ -9,12 +9,24 @@ import (
 
 type Solution string
 
-func (sol Solution) Rating(index Index) Rating {
-	var rating Rating
+func (sol Solution) Score(index Index) float64 {
+	var cumRating float64
+	personalRating := make([]float64, len(index.People))
+
 	sol.iterate(index, func(personIndex, dishIndex int) {
-		rating += index.Matrix[personIndex][dishIndex]
+		rating := float64(index.Matrix[personIndex][dishIndex])
+		cumRating += rating
+		personalRating[personIndex] += rating
 	})
-	return rating
+
+	mean := cumRating / float64(len(index.People))
+
+	var cumDeviation float64
+	for _, rating := range personalRating {
+		cumDeviation += math.Abs(mean - rating)
+	}
+
+	return cumRating - cumDeviation
 }
 
 type Distribution map[PersonName][]DishName
@@ -68,14 +80,14 @@ func CountSolutions(index Index) int64 {
 	return int64(n)
 }
 
-func FindBestDistribution(index Index, solutions <-chan Solution) (Distribution, Rating) {
+func FindBestDistribution(index Index, solutions <-chan Solution) (Distribution, float64) {
 	var bestDistr Distribution
-	maxRating := Rating(math.Inf(-1))
+	maxScore := math.Inf(-1)
 	for sol := range solutions {
-		if rating := sol.Rating(index); rating > maxRating {
-			maxRating = rating
+		if score := sol.Score(index); score > maxScore {
+			maxScore = score
 			bestDistr = sol.Distribution(index)
 		}
 	}
-	return bestDistr, maxRating
+	return bestDistr, maxScore
 }
