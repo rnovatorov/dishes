@@ -13,14 +13,14 @@ type Dish string
 
 type Rating int
 
-type Prefs map[Person]map[Dish]Rating
+type Preferences map[Person]map[Dish]Rating
 
-func LoadPrefs(fileName string) (Prefs, error) {
+func LoadPreferences(fileName string) (Preferences, error) {
 	fileBytes, err := ioutil.ReadFile(fileName)
 	if err != nil {
 		return nil, fmt.Errorf("read file: %w", err)
 	}
-	var prefs Prefs
+	var prefs Preferences
 	if err := json.Unmarshal(fileBytes, &prefs); err != nil {
 		return nil, fmt.Errorf("unmarshal json: %w", err)
 	}

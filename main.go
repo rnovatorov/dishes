@@ -31,7 +31,7 @@ func run() error {
 		defer pprof.StopCPUProfile()
 	}
 
-	prefs, err := lib.LoadPrefs(*args.prefsFileName)
+	prefs, err := lib.LoadPreferences(*args.prefsFileName)
 	if err != nil {
 		return fmt.Errorf("load preferences: %w", err)
 	}

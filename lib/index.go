@@ -6,7 +6,7 @@ type Index struct {
 	Matrix [][]Rating
 }
 
-func BuildIndex(prefs Prefs) Index {
+func BuildIndex(prefs Preferences) Index {
 	var index Index
 
 	seen := make(map[Dish]bool)
