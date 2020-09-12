@@ -37,10 +37,11 @@ func run() error {
 	}
 
 	index := lib.BuildIndex(prefs)
-	solutions := lib.GenerateSolutions(index)
-	bestDistr, rating := lib.FindBestDistribution(index, solutions)
+	distributions := lib.GenerateDistributions(index)
+	solutions := lib.RateDistributions(index, distributions)
+	bestSolution := lib.FindBestSolution(solutions)
+	fmt.Println(bestSolution.Distribution.Map(index), bestSolution.Score)
 
-	fmt.Println(bestDistr, rating)
 	return nil
 }
 

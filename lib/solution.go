@@ -1,23 +1,23 @@
 package lib
 
 import (
-	"fmt"
 	"math"
-	"strconv"
-	"strings"
 )
 
-type Solution string
+type Solution struct {
+	Distribution Distribution
+	Score        float64
+}
 
-func (sol Solution) Score(index Index) float64 {
+func NewSolution(index Index, d Distribution) Solution {
 	var cumRating float64
 	personalRating := make([]float64, len(index.People))
 
-	sol.iterate(index, func(personIndex, dishIndex int) {
+	for dishIndex, personIndex := range d {
 		rating := float64(index.Matrix[personIndex][dishIndex])
 		cumRating += rating
 		personalRating[personIndex] += rating
-	})
+	}
 
 	mean := cumRating / float64(len(index.People))
 
@@ -26,68 +26,52 @@ func (sol Solution) Score(index Index) float64 {
 		cumDeviation += math.Abs(mean - rating)
 	}
 
-	return cumRating - cumDeviation
-}
+	score := cumRating - cumDeviation
 
-type Distribution map[Person][]Dish
-
-func (sol Solution) Distribution(index Index) Distribution {
-	distr := make(Distribution)
-	sol.iterate(index, func(personIndex, dishIndex int) {
-		person := index.People[personIndex]
-		dish := index.Menu[dishIndex]
-		distr[person] = append(distr[person], dish)
-	})
-	return distr
-}
-
-func (sol Solution) iterate(index Index, fn func(personIndex, dishIndex int)) {
-	for dishIndex, s := range strings.Split(string(sol), "") {
-		personIndex := int(MustParseInt(s, len(index.People), 32))
-		fn(personIndex, dishIndex)
+	return Solution{
+		Distribution: d,
+		Score:        score,
 	}
 }
 
-func MustParseInt(s string, base int, bitSize int) int64 {
-	n, err := strconv.ParseInt(s, base, bitSize)
-	if err != nil {
-		panic(err)
-	}
-	return n
+func GenerateDistributions(index Index) <-chan Distribution {
+	const bufSize = 256
+	distributions := make(chan Distribution, bufSize)
+	go func() {
+		defer close(distributions)
+		n := CountDistributions(index)
+		for i := 0; i < n; i++ {
+			distributions <- NewDistibution(index, i)
+		}
+	}()
+	return distributions
 }
 
-func GenerateSolutions(index Index) <-chan Solution {
+func CountDistributions(index Index) int {
+	nPeople := float64(len(index.People))
+	nDishes := float64(len(index.Menu))
+	n := math.Pow(nPeople, nDishes)
+	return int(n)
+}
+
+func RateDistributions(index Index, distributions <-chan Distribution) <-chan Solution {
 	const bufSize = 256
 	solutions := make(chan Solution, bufSize)
 	go func() {
 		defer close(solutions)
-		var i int64
-		nSolutions := CountSolutions(index)
-		for i = 0; i < nSolutions; i++ {
-			iBaseNPeople := strconv.FormatInt(i, len(index.People))
-			nDishesZeroPadded := fmt.Sprintf("%%0%ds", len(index.Menu))
-			sol := fmt.Sprintf(nDishesZeroPadded, iBaseNPeople)
-			solutions <- Solution(sol)
+		for d := range distributions {
+			solutions <- NewSolution(index, d)
 		}
 	}()
 	return solutions
 }
 
-func CountSolutions(index Index) int64 {
-	nPeople := float64(len(index.People))
-	nDishes := float64(len(index.Menu))
-	n := math.Pow(nPeople, nDishes)
-	return int64(n)
-}
-
-func FindBestDistribution(index Index, solutions <-chan Solution) (Distribution, float64) {
-	var bestDistr Distribution
-	maxScore := math.Inf(-1)
-	for sol := range solutions {
-		if score := sol.Score(index); score > maxScore {
-			maxScore = score
-			bestDistr = sol.Distribution(index)
+func FindBestSolution(solutions <-chan Solution) Solution {
+	best := Solution{Score: math.Inf(-1)}
+	for s := range solutions {
+		if s.Score > best.Score {
+			best = s
 		}
 	}
-	return bestDistr, maxScore
+	return best
 }
