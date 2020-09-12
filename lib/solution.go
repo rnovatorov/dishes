@@ -1,8 +1,6 @@
 package lib
 
-import (
-	"math"
-)
+import "math"
 
 type Solution struct {
 	Distribution Distribution
@@ -32,46 +30,4 @@ func NewSolution(index Index, d Distribution) Solution {
 		Distribution: d,
 		Score:        score,
 	}
-}
-
-func GenerateDistributions(index Index) <-chan Distribution {
-	const bufSize = 256
-	distributions := make(chan Distribution, bufSize)
-	go func() {
-		defer close(distributions)
-		n := CountDistributions(index)
-		for i := 0; i < n; i++ {
-			distributions <- NewDistibution(index, i)
-		}
-	}()
-	return distributions
-}
-
-func CountDistributions(index Index) int {
-	nPeople := float64(len(index.People))
-	nDishes := float64(len(index.Menu))
-	n := math.Pow(nPeople, nDishes)
-	return int(n)
-}
-
-func RateDistributions(index Index, distributions <-chan Distribution) <-chan Solution {
-	const bufSize = 256
-	solutions := make(chan Solution, bufSize)
-	go func() {
-		defer close(solutions)
-		for d := range distributions {
-			solutions <- NewSolution(index, d)
-		}
-	}()
-	return solutions
-}
-
-func FindBestSolution(solutions <-chan Solution) Solution {
-	best := Solution{Score: math.Inf(-1)}
-	for s := range solutions {
-		if s.Score > best.Score {
-			best = s
-		}
-	}
-	return best
 }
