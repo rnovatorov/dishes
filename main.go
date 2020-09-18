@@ -41,6 +41,9 @@ func run() error {
 	}
 
 	index := lib.BuildIndex(prefs)
+	if *args.normalize {
+		index.Normalize()
+	}
 	solver := lib.NewSolver(index)
 
 	distributions := solver.GenerateDistributions()
@@ -58,6 +61,7 @@ type parsedArgs struct {
 	prefsFileName *string
 	cpuProfile    *string
 	top           *uint
+	normalize     *bool
 }
 
 func parseArgs() parsedArgs {
@@ -66,6 +70,7 @@ func parseArgs() parsedArgs {
 	args.cpuProfile = flag.String("cpu-profile", "", "cpu profile file name")
 	args.prefsFileName = flag.String("preferences", "", "preferences file name")
 	args.top = flag.Uint("top", 10, "find top n solutions")
+	args.normalize = flag.Bool("normalize", false, "normalize preferences weights")
 
 	flag.Parse()
 

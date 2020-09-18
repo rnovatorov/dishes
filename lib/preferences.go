@@ -11,7 +11,7 @@ type Person string
 
 type Dish string
 
-type Rating int
+type Rating float64
 
 type Preferences map[Person]map[Dish]Rating
 
