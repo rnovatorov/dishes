@@ -23,8 +23,8 @@ func run() error {
 		return nil
 	}
 
-	if *args.cpuProfile != "" {
-		file, err := os.Create(*args.cpuProfile)
+	if *args.cpuProf != "" {
+		file, err := os.Create(*args.cpuProf)
 		if err != nil {
 			return fmt.Errorf("create file: %w", err)
 		}
@@ -35,13 +35,13 @@ func run() error {
 		defer pprof.StopCPUProfile()
 	}
 
-	prefs, err := lib.LoadPreferences(*args.prefsFileName)
+	prefs, err := lib.LoadPreferences(*args.prefs)
 	if err != nil {
 		return fmt.Errorf("load preferences: %w", err)
 	}
 
 	index := lib.BuildIndex(prefs)
-	if *args.normalize {
+	if *args.norm {
 		index.Normalize()
 	}
 	solver := lib.NewSolver(index)
@@ -58,19 +58,19 @@ func run() error {
 }
 
 type parsedArgs struct {
-	prefsFileName *string
-	cpuProfile    *string
-	top           *uint
-	normalize     *bool
+	prefs   *string
+	cpuProf *string
+	top     *uint
+	norm    *bool
 }
 
 func parseArgs() parsedArgs {
 	var args parsedArgs
 
-	args.cpuProfile = flag.String("cpu-profile", "", "cpu profile file name")
-	args.prefsFileName = flag.String("preferences", "", "preferences file name")
+	args.cpuProf = flag.String("cpu-prof", "", "cpu profile file name")
+	args.prefs = flag.String("prefs", "", "preferences file name")
 	args.top = flag.Uint("top", 10, "find top n solutions")
-	args.normalize = flag.Bool("normalize", false, "normalize preferences weights")
+	args.norm = flag.Bool("norm", false, "normalize preferences weights")
 
 	flag.Parse()
 
